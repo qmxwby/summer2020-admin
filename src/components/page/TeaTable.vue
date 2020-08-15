@@ -44,7 +44,7 @@
                     <el-tooltip class="item" effect="light" open-delay="500" content="更新" placement="bottom" :enterable="false">
                     <el-button type="primary" size="mini" icon="el-icon-edit"
                     circle
-                    @click="updateOneTeacher(scope.row.id, scope.row)"
+                    @click="updateOneTeacher(scope.row.tid, scope.row)"
 					style="margin-left: 30px;"></el-button>
                     </el-tooltip>
                     <el-tooltip class="item" effect="light" open-delay="500" content="删除" placement="bottom" :enterable="false">
@@ -79,6 +79,9 @@
                 <el-form-item label="教师编号">
                     <el-input v-model="form.tid" disabled></el-input>
                 </el-form-item>
+				<el-form-item label="入职年份">
+				    <el-input v-model="form.tinyear" disabled></el-input>
+				</el-form-item>
                 <el-form-item label="姓名">
                     <el-input v-model="form.tname"></el-input>
                 </el-form-item>
@@ -88,13 +91,15 @@
 				</el-form-item>
 				<el-form-item label="学院">
 					<el-select v-model="form.deptName" placeholder="请选择活动区域">
-					  <el-option label="区域一" value="shanghai"></el-option>
-					  <el-option label="区域二" value="beijing"></el-option>
+					  <el-option v-for="item in options"
+					  :value="item.value"
+					  :label="item.label"
+					  ></el-option>
 					</el-select>
 				</el-form-item>
 				<el-form-item label="职称">
 				    <el-input v-model="form.tprof"></el-input>
-				</el-form-item>
+				</el-form-item>	
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="editVisible = false">取 消</el-button>
@@ -113,6 +118,13 @@ export default {
                 pageIndex: 1,
                 pageSize: 5
             },
+			options: [{
+			          value: '11',
+			          label: '计算机与信息学院'
+			        }, {
+			          value: '12',
+			          label: '土木与建筑学院'
+			        }],
             tableData: [],
             multipleSelection: [],
             delList: [],
@@ -178,11 +190,30 @@ export default {
 		updateOneTeacher(tid, data) {
 			this.editVisible = true;
 			this.form = data;
+			this.$http.get('teacher/getById/'+tid)
+			.then(resp => {
+				let res = resp.data;
+				if(res.code == 200){
+					this.form.tpassword = res.data.tpassword;
+					console.log(this.form);
+				} else {
+					this.$message.error(res.msg);
+				}
+			});		
 		},
 		//保存教师编辑对话框
 		saveEdit() {
 			this.editVisible = false;
-			
+			this.$http.post('teacher/update', this.form)
+			.then(resp => {
+				let res = resp.data;
+				if(res.code == 200){
+					this.$message.success(res.msg);
+					this.getData();
+				} else {
+					this.$message.error('请求失败！');
+				}
+			});		
 		}
     }
 };
