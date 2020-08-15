@@ -44,7 +44,7 @@
                     <el-tooltip class="item" effect="light" open-delay="500" content="更新" placement="bottom" :enterable="false">
                     <el-button type="primary" size="mini" icon="el-icon-edit"
                     circle
-                    @click="updateOneTeacher(scope.row.id)"
+                    @click="updateOneTeacher(scope.row.id, scope.row)"
 					style="margin-left: 30px;"></el-button>
                     </el-tooltip>
                     <el-tooltip class="item" effect="light" open-delay="500" content="删除" placement="bottom" :enterable="false">
@@ -74,14 +74,27 @@
         </div>
 
         <!-- 编辑弹出框 -->
-        <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
+        <el-dialog title="编辑教师信息" :visible.sync="editVisible" width="30%">
             <el-form ref="form" :model="form" label-width="70px">
-                <el-form-item label="用户名">
-                    <el-input v-model="form.name"></el-input>
+                <el-form-item label="教师编号">
+                    <el-input v-model="form.tid" disabled></el-input>
                 </el-form-item>
-                <el-form-item label="地址">
-                    <el-input v-model="form.address"></el-input>
+                <el-form-item label="姓名">
+                    <el-input v-model="form.tname"></el-input>
                 </el-form-item>
+				<el-form-item label="性别">
+				     <el-radio v-model="form.tsex" label="男">男</el-radio>
+					 <el-radio v-model="form.tsex" label="女">女</el-radio>
+				</el-form-item>
+				<el-form-item label="学院">
+					<el-select v-model="form.deptName" placeholder="请选择活动区域">
+					  <el-option label="区域一" value="shanghai"></el-option>
+					  <el-option label="区域二" value="beijing"></el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="职称">
+				    <el-input v-model="form.tprof"></el-input>
+				</el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="editVisible = false">取 消</el-button>
@@ -92,7 +105,6 @@
 </template>
 
 <script>
-import { fetchData } from '../../api/index';
 export default {
     name: 'basetable',
     data() {
@@ -151,32 +163,27 @@ export default {
             this.multipleSelection = val;
         },
         delAllSelection() {
-            const length = this.multipleSelection.length;
-            let str = '';
-            this.delList = this.delList.concat(this.multipleSelection);
-            for (let i = 0; i < length; i++) {
-                str += this.multipleSelection[i].name + ' ';
-            }
-            this.$message.error(`删除了${str}`);
-            this.multipleSelection = [];
         },
-        // 编辑操作
-        handleEdit(index, row) {
-            this.idx = index;
-            this.form = row;
-            this.editVisible = true;
-        },
-        // 保存编辑
-        saveEdit() {
-            this.editVisible = false;
-            this.$message.success(`修改第 ${this.idx + 1} 行成功`);
-            this.$set(this.tableData, this.idx, this.form);
-        },
-        // 分页导航
-        handlePageChange(val) {
-            this.$set(this.query, 'pageIndex', val);
-            this.getData();
-        }
+		//改变页码
+		handleCurrentChange(val) {
+			this.query.pageIndex = val;
+			this.getData();
+		},
+		//改变当前显示数量
+		handleSizeChange(val) {
+			this.query.pageSize = val;
+			this.getData();
+		},
+		//编辑事件
+		updateOneTeacher(tid, data) {
+			this.editVisible = true;
+			this.form = data;
+		},
+		//保存教师编辑对话框
+		saveEdit() {
+			this.editVisible = false;
+			
+		}
     }
 };
 </script>
