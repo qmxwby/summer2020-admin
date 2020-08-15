@@ -63,8 +63,18 @@ export default {
                 },
                 {
                     icon: 'el-icon-lx-cascades',
-                    index: 'table',
-                    title: '基础表格'
+                    index: '2',
+                    title: '人员管理',
+					subs: [
+						{
+							index: 'stutable',
+							title: '学生管理'
+						},
+						{
+							index: 'teatable',
+							title: '教师管理'
+						}
+					]
                 },
                 {
                     icon: 'el-icon-lx-copy',

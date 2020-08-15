@@ -25,10 +25,15 @@ export default new Router({
                     meta: { title: '自定义图标' }
                 },
                 {
-                    path: '/table',
-                    component: () => import(/* webpackChunkName: "table" */ '../components/page/BaseTable.vue'),
-                    meta: { title: '基础表格' }
+                    path: '/stutable',
+                    component: () => import(/* webpackChunkName: "table" */ '../components/page/StuTable.vue'),
+                    meta: { title: '学生管理' }
                 },
+				{
+				    path: '/teatable',
+				    component: () => import(/* webpackChunkName: "table" */ '../components/page/TeaTable.vue'),
+				    meta: { title: '教师管理' }
+				},
                 {
                     path: '/tabs',
                     component: () => import(/* webpackChunkName: "tabs" */ '../components/page/Tabs.vue'),
