@@ -206,23 +206,21 @@ export default {
 			this.multipleSelection.forEach(item => {
 				ids.push(item.tid);
 			});
-			let data = {};
-			data.ids = ids;
-			console.log(data);
 			this.$confirm('确定要删除吗，删除之后不可恢复！', '警告',{
 				type: 'warning'
 			})
 			.then(() => {
-				this.$http.post('teacher/deleteByList', data)
+				console.log(ids);
+				this.$http.post('teacher/deleteByList', ids)
 				.then(resp => {
 					let res = resp.data;
 					if(res.code == 200){
 						this.$message.success(res.msg);
+						this.getData();	
 					}else{
 						this.$message.error('请求失败！');
 					}
-				})
-				this.getData();				
+				});		
 			})
         },
 		//根据id进行删除
@@ -293,12 +291,12 @@ export default {
 				let res = resp.data;
 				if(res.code == 200){
 					this.$message.success(res.msg);
+					this.getData();
 				}else{
 					this.$message.error(res.msg);
 				}
 			});
 			this.addVisible = false;
-			this.getData();
 		}
     }
 };
