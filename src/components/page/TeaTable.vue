@@ -53,7 +53,7 @@
                       icon="el-icon-delete"
                       size="mini"
                       circle
-                      @click="removeOneTeacher(scope.row.id)"
+                      @click="removeOneTeacher(scope.row.tid)"
 					 style="margin-left: 30px;"
                     ></el-button>
                     </el-tooltip>
@@ -90,10 +90,13 @@
 					 <el-radio v-model="form.tsex" label="女">女</el-radio>
 				</el-form-item>
 				<el-form-item label="学院">
-					<el-select v-model="form.deptName" placeholder="请选择活动区域">
+					<el-select 
+					@change="optionChage"
+					v-model="form.deptName" 
+					placeholder="请选择学院">
 					  <el-option v-for="item in options"
 					  :value="item.value"
-					  :label="item.label"
+					  :label="item.label"  
 					  ></el-option>
 					</el-select>
 				</el-form-item>
@@ -106,6 +109,43 @@
                 <el-button type="primary" @click="saveEdit">确 定</el-button>
             </span>
         </el-dialog>
+		
+		<!-- 添加教师弹出框 -->
+		<el-dialog title="添加教师" :visible.sync="addVisible" width="30%">
+		    <el-form ref="form" :model="form" label-width="70px">
+		        <el-form-item label="教师编号">
+		            <el-input v-model="form.tid"></el-input>
+		        </el-form-item>
+				<el-form-item label="入职年份">
+				    <el-input v-model="form.tinyear"></el-input>
+				</el-form-item>
+		        <el-form-item label="姓名">
+		            <el-input v-model="form.tname"></el-input>
+		        </el-form-item>
+				<el-form-item label="性别">
+				     <el-radio v-model="form.tsex" label="男">男</el-radio>
+					 <el-radio v-model="form.tsex" label="女">女</el-radio>
+				</el-form-item>
+				<el-form-item label="学院">
+					<el-select 
+					@change="optionChage"
+					v-model="form.deptName" 
+					placeholder="请选择学院">
+					  <el-option v-for="item in options"
+					  :value="item.value"
+					  :label="item.label"  
+					  ></el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="职称">
+				    <el-input v-model="form.tprof"></el-input>
+				</el-form-item>	
+		    </el-form>
+		    <span slot="footer" class="dialog-footer">
+		        <el-button @click="addVisible = false">取 消</el-button>
+		        <el-button type="primary" @click="addEdit">确 定</el-button>
+		    </span>
+		</el-dialog>
     </div>
 </template>
 
@@ -119,20 +159,19 @@ export default {
                 pageSize: 5
             },
 			options: [{
-			          value: '11',
+			          value: 11,
 			          label: '计算机与信息学院'
 			        }, {
-			          value: '12',
+			          value: 12,
 			          label: '土木与建筑学院'
 			        }],
             tableData: [],
             multipleSelection: [],
             delList: [],
             editVisible: false,
-            pageTotal: 0,
-            form: {},
-            idx: -1,
-            id: -1
+            addVisible: false,
+			pageTotal: 0,
+            form: {}
         };
     },
     created() {
@@ -158,24 +197,54 @@ export default {
             this.$set(this.query, 'pageIndex', 1);
             this.getData();
         },
-        // 删除操作
-        handleDelete(index, row) {
-            // 二次确认删除
-            this.$confirm('确定要删除吗？', '提示', {
-                type: 'warning'
-            })
-                .then(() => {
-                    this.$message.success('删除成功');
-                    this.tableData.splice(index, 1);
-                })
-                .catch(() => {});
-        },
         // 多选操作
         handleSelectionChange(val) {
             this.multipleSelection = val;
         },
         delAllSelection() {
+			let ids = [];
+			this.multipleSelection.forEach(item => {
+				ids.push(item.tid);
+			});
+			let data = {};
+			data.ids = ids;
+			console.log(data);
+			this.$confirm('确定要删除吗，删除之后不可恢复！', '警告',{
+				type: 'warning'
+			})
+			.then(() => {
+				this.$http.post('teacher/deleteByList', data)
+				.then(resp => {
+					let res = resp.data;
+					if(res.code == 200){
+						this.$message.success(res.msg);
+					}else{
+						this.$message.error('请求失败！');
+					}
+				})
+				this.getData();				
+			})
         },
+		//根据id进行删除
+		removeOneTeacher(tid){
+			//二次删除确认
+			this.$confirm('确定要删除吗？', '提示',{
+				type: 'warning'
+			})
+			.then(() => {
+				this.$http.delete('teacher/delTeacher/'+tid)
+				.then(resp => {
+					let res = resp.data;
+					if(res.code == 200){
+						this.$message.success(res.msg);
+						this.getData();
+					}else{
+						this.$message.error(res.msg);
+						this.getData();
+					}
+				});
+			});
+		},
 		//改变页码
 		handleCurrentChange(val) {
 			this.query.pageIndex = val;
@@ -186,24 +255,20 @@ export default {
 			this.query.pageSize = val;
 			this.getData();
 		},
+		//改变教师学院时触发，让学院编号发生变化
+		optionChage(val) {
+			this.form.deptId = val;
+		},
 		//编辑事件
 		updateOneTeacher(tid, data) {
+			this.form = {};
 			this.editVisible = true;
-			this.form = data;
-			this.$http.get('teacher/getById/'+tid)
-			.then(resp => {
-				let res = resp.data;
-				if(res.code == 200){
-					this.form.tpassword = res.data.tpassword;
-					console.log(this.form);
-				} else {
-					this.$message.error(res.msg);
-				}
-			});		
+			this.form = data;		
 		},
 		//保存教师编辑对话框
 		saveEdit() {
 			this.editVisible = false;
+			console.log(this.form);
 			this.$http.post('teacher/update', this.form)
 			.then(resp => {
 				let res = resp.data;
@@ -214,6 +279,26 @@ export default {
 					this.$message.error('请求失败！');
 				}
 			});		
+		},
+		//点击添加教师事件
+		addTeacher() {
+			this.addVisible = true;
+			this.form = {};
+		},
+		//确定添加
+		addEdit() {
+			this.form.tpassword = '123456';
+			this.$http.post('teacher/addTeacher', this.form)
+			.then(resp => {
+				let res = resp.data;
+				if(res.code == 200){
+					this.$message.success(res.msg);
+				}else{
+					this.$message.error(res.msg);
+				}
+			});
+			this.addVisible = false;
+			this.getData();
 		}
     }
 };
